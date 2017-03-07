@@ -1,6 +1,6 @@
 # CS:GO Zeus Tracer Bullets
 
-[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/AyNLrRxBMaw/0.jpg)](http://www.youtube.com/watch?v=AyNLrRxBMaw)
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/QJzz6oUtAMk/0.jpg)](http://www.youtube.com/watch?v=QJzz6oUtAMk)
 
 ## Description
 This plugin will create a zeus tracer effect on bullets fired
