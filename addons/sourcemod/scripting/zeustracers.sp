@@ -1,6 +1,6 @@
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.0"
+#define PLUGIN_VERSION "1.1"
 
 #include <sourcemod>
 #include <sdktools>
@@ -30,7 +30,7 @@ public Plugin myinfo =
 	author = "Tak (Chaosxk)",
 	description = "Creates the zeus tracers effect on weapon fire.",
 	version = PLUGIN_VERSION,
-	url = ""
+	url = "https://github.com/xcalvinsz/zeustracerbullets"
 };
 
 public void OnPluginStart()
@@ -196,12 +196,16 @@ public Action Event_BulletImpact(Event event, const char[] name, bool dontBroadc
 	
 	//Display the particle to everyone else under the normal position
 	TE_DispatchEffect(TASER, muzzle_pos, impact_pos, g_fLastAngles[client]);
+	
+	int[] clients = new int[MaxClients];
+	int client_count;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || i == client || IsFakeClient(i))
 			continue;
-		TE_SendToClient(i);
+		clients[client_count++] = i;
 	}
+	TE_Send(clients, client_count);
 	
 	if (g_bGlow[client])
 	{
