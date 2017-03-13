@@ -1,6 +1,6 @@
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.1"
+#define PLUGIN_VERSION "1.2"
 
 #include <sourcemod>
 #include <sdktools>
@@ -83,6 +83,26 @@ public void OnClientPostAdminCheck(int client)
 	SDKHook(client, SDKHook_WeaponCanSwitchTo, Hook_WeaponSwitch);
 }
 
+public void OnRebuildAdminCache(AdminCachePart part)
+{
+	if (part == AdminCache_Admins)
+	{
+		RequestFrame(Frame_AdminCache, 0);
+	}
+}
+
+public void Frame_AdminCache(any data)
+{
+	char weaponname[32];
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || !IsPlayerAlive(i))
+			continue;
+		GetClientWeapon(i, weaponname, sizeof(weaponname));
+		UpdateClientCache(i, weaponname);
+	}
+}
+
 public Action Command_ZeusTracers(int client, int args)
 {
 	if (!g_cEnabled.BoolValue)
@@ -132,25 +152,9 @@ public void Hook_WeaponSwitch(int client, int weapon)
 	if (weapon == -1)
 		return;
 		
-	char buffer[32], weaponname[32];
+	char weaponname[32];
 	GetEntityClassname(weapon, weaponname, sizeof(weaponname));
-	
-	for (int i = 0; i < g_hArray.Length; i++)
-	{
-		DataPack pack = g_hArray.Get(i);
-		pack.Reset();
-		pack.ReadString(buffer, sizeof(buffer));
-		
-		if (!strcmp(buffer, weaponname))
-		{
-			//Update current cache values
-			g_bZeus[client] = pack.ReadCell();
-			g_bGlow[client] = pack.ReadCell();
-			g_fImpactSound[client] = pack.ReadFloat();
-			g_fMuzzleSound[client] = pack.ReadFloat();
-			g_bAccess[client] = pack.ReadCell();
-		}
-	}
+	UpdateClientCache(client, weaponname);
 }
 
 public Action Event_BulletImpact(Event event, const char[] name, bool dontBroadcast)
@@ -162,8 +166,8 @@ public Action Event_BulletImpact(Event event, const char[] name, bool dontBroadc
 	
 	if (!g_bOverride[client] && !g_bZeus[client])
 		return Plugin_Continue;
-		
-	if (!g_bOverride[client] && !CheckCommandAccess(client, "", g_bAccess[client], true))
+
+	if (!g_bOverride[client] && !g_bAccess[client])
 		return Plugin_Continue;
 	
 	float impact_pos[3];
@@ -234,7 +238,7 @@ public Action Hook_BulletShot(const char[] te_name, const int[] Players, int num
 	if (!g_bOverride[client] && !g_bZeus[client])
 		return Plugin_Continue;
 		
-	if (!g_bOverride[client] && !CheckCommandAccess(client, "", g_bAccess[client], true))
+	if (!g_bOverride[client] && !g_bAccess[client])
 		return Plugin_Continue;
 	
 	float origin[3];
@@ -261,6 +265,29 @@ public bool TR_DontHitSelf(int entity, int mask, any data)
 	if (entity == data) 
 		return false;
 	return true;
+}
+
+void UpdateClientCache(int client, const char[] weaponname)
+{
+	char buffer[32];
+	
+	for (int i = 0; i < g_hArray.Length; i++)
+	{
+		DataPack pack = g_hArray.Get(i);
+		pack.Reset();
+		pack.ReadString(buffer, sizeof(buffer));
+		
+		if (!strcmp(buffer, weaponname))
+		{
+			//Update current cache values
+			g_bZeus[client] = pack.ReadCell();
+			g_bGlow[client] = pack.ReadCell();
+			g_fImpactSound[client] = pack.ReadFloat();
+			g_fMuzzleSound[client] = pack.ReadFloat();
+			g_bAccess[client] = CheckCommandAccess(client, "", (1 << pack.ReadCell()), true);
+			break;
+		}
+	}
 }
 
 void GetWeaponAttachmentPosition(int client, const char[] attachment, float pos[3])
@@ -404,4 +431,6 @@ void SetupKVFiles()
 		g_hArray.Push(pack);
 		
 	} while (KvGotoNextKey(kv));
+	
+	delete kv;
 }
