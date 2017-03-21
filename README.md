@@ -28,7 +28,7 @@ sm_zeustracers <client> <1:ON | 0:OFF> - Turns on/off zeus tracers, this will ma
 3. Place zeustracers.cfg to cfg/sourcemod/ and edit your convars to fit your needs
 ```
 
-##Configuration Setup
+## Configuration Setup
 * Open addons/sourcemod/configs/zeustracers_guns.cfg
 ```
 "weapon_ak47"					//Classname of weapon
