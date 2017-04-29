@@ -13,7 +13,7 @@ Requires Sourcemod 1.8+ and Metamod 1.10+
 
 ## Convar settings
 ```
-sm_zeustracers_enabled - [1/0] - Enables/Disables plugin
+sm_zeustracers_enabled -  Enables/Disables plugin
 ```
 
 ## Commands
